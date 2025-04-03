@@ -18,6 +18,8 @@ import java.util.ArrayList;
 
 public class HelloApplication extends Application {
 
+    private Pane customPaneClass; //global pane variable
+
     /*
  This program should consist of three classes. The first class should have two instance variables
 of type double that represent the x and y coordinates of the point. It should be an immutable
@@ -48,7 +50,9 @@ class the implements the Comparable interface with the following public methods:
          A private method that finds the maximal set and draws the lines that connect them
     */
 
-    public static class PaneClass extends Pane {
+    public class PaneClass extends Pane {
+
+
         public PaneClass(ArrayList<Point> initialPoints) {
             for(Point point : initialPoints) {
                 Circle circle = new Circle();
@@ -59,14 +63,22 @@ class the implements the Comparable interface with the following public methods:
                 this.getChildren().add(circle);
             }
         }
+
+            private Circle mouseClickHandler(double x, double y){
+                Circle circle = new Circle();
+                circle.setCenterX(x);
+                circle.setCenterY(y);
+                circle.setFill(Color.BLACK);
+                circle.setRadius(5.0f);
+                //customPaneClass.getChildren().add(circle);
+                return circle;
+        }
     }
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
 
         stage.setTitle("Project 2");
-
 
         // Create an ArrayList of type Point's
         ArrayList<Point> points = new ArrayList<>();
@@ -92,12 +104,14 @@ class the implements the Comparable interface with the following public methods:
         customPaneClass.setOnMouseClicked(e -> {
             // Add a circle on left click
             if (e.getButton() == MouseButton.PRIMARY) {
-                Circle circle = new Circle();
-                circle.setCenterX(e.getX());
-                circle.setCenterY(e.getY());
-                circle.setRadius(5.0f);
-                circle.setFill(Color.BLACK);
-                customPaneClass.getChildren().add(circle);
+//                Circle circle = new Circle();
+//                circle.setCenterX(e.getX());
+//                circle.setCenterY(e.getY());
+//                circle.setRadius(5.0f);
+//                circle.setFill(Color.BLACK);
+//                customPaneClass.getChildren().add(circle);
+                customPaneClass.getChildren().add(customPaneClass.mouseClickHandler(e.getX(), e.getY()) );
+
             } // Right-click: Remove a circle
             else if (e.getButton() == MouseButton.SECONDARY) {
                 // Use a reverse loop to safely remove items while iterating
