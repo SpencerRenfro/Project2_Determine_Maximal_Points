@@ -83,14 +83,13 @@ class the implements the Comparable interface with the following public methods:
         points.add(new Point(251.0, 414.0));
 
 
-        Pane pane = new Pane();
         PaneClass customPaneClass = new PaneClass(points);
 
 
 
         // Mouse events for adding circles on left click and removing circles on right click
 
-        pane.setOnMouseClicked(e -> {
+        customPaneClass.setOnMouseClicked(e -> {
             // Add a circle on left click
             if (e.getButton() == MouseButton.PRIMARY) {
                 Circle circle = new Circle();
@@ -98,16 +97,16 @@ class the implements the Comparable interface with the following public methods:
                 circle.setCenterY(e.getY());
                 circle.setRadius(5.0f);
                 circle.setFill(Color.BLACK);
-                pane.getChildren().add(circle);
+                customPaneClass.getChildren().add(circle);
             } // Right-click: Remove a circle
             else if (e.getButton() == MouseButton.SECONDARY) {
                 // Use a reverse loop to safely remove items while iterating
-                for (int i = pane.getChildren().size() - 1; i >= 0; i--) {
-                    if (pane.getChildren().get(i) instanceof Circle) {
+                for (int i = customPaneClass.getChildren().size() - 1; i >= 0; i--) {
+                    if (customPaneClass.getChildren().get(i) instanceof Circle) {
                         //can replace this with a pattern variable
-                        Circle circle = (Circle) pane.getChildren().get(i);
+                        Circle circle = (Circle) customPaneClass.getChildren().get(i);
                         if (circle.contains(e.getX(), e.getY())) {
-                            pane.getChildren().remove(i);
+                            customPaneClass.getChildren().remove(i);
                             break;  // stop after removing one circle
                         }
                     }
