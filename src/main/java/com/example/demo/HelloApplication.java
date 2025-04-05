@@ -78,6 +78,11 @@ class the implements the Comparable interface with the following public methods:
             this.y = yValue;
         }
 
+//        Point(Point point) {
+//            this.x = point.x;
+//            this.y = point.y;
+//        }
+
         public boolean isBelowAndLeft(Point other) {
             return this.x < other.x && this.y < other.y;
         }
@@ -109,9 +114,10 @@ class the implements the Comparable interface with the following public methods:
     */
     public static class PaneClass extends Pane {
 
+        ArrayList<PointCirclePair> pointCirclePairs = new ArrayList<>();
+
         ArrayList<Point> pointsList = null;
         ArrayList<Point> maximalPointsList = new ArrayList<>();
-        boolean isMaximal = true;
 
         // experimental flag for calling drae line method for points being added or removed
         boolean pointsChanged = false;
@@ -120,66 +126,113 @@ class the implements the Comparable interface with the following public methods:
             pointsList = initialPoints;
 
 
-            for(Point point : pointsList) {
-                Circle circle = new Circle();
-                circle.setCenterX((double) point.getX());
-                circle.setCenterY((double) point.getY());
-                circle.setRadius(5.0f);
-                circle.setFill(Color.BLACK);
-                this.getChildren().add(circle);
-
-            }
-            // find Maximal Points
-            this.findMaximalPoints();
-            System.out.println("Maximal Points: ");
-            System.out.println(maximalPointsList);
 
 
             //sort maximal points in order from smallest to largest by x coordinate using insertion sort
+            //this.sortMaximalPoints();
+            // draw maximal line
+            //this.drawMaximalPointLines();
+
+            //creating new pointCirclePair collection
+            this.addInitialPoints(initialPoints);
+            // now print list
+            for (PointCirclePair pointCirclePair : pointCirclePairs) {
+                System.out.println("Points in pair list" + pointCirclePair.point +"Circles in pair list" + pointCirclePair.circle);
+            }
+            //finding maximal points in circlePointPairs
+            this.findMaximalPointsInPointCirclePair();
+            //print maximal points in pointCirclePair
+            this.printMaximalPointsInPointCirclePair();
+
+            //change maximal points in pointCirclePairs to red
+            for(PointCirclePair pair: pointCirclePairs) {
+                if(pair.isMaximalPoint){
+                    System.out.println("maximal point true, changing fill to red");
+                    pair.circle.setFill(Color.RED);
+                }
+            }
+
+            //print maximal points in pointCirclePair to show new fill color
+            System.out.println("\n\n RE-PRINTING PAIRS LIST, FILL SHOULD BE CHANGED");
+            this.printMaximalPointsInPointCirclePair();
+            // sort maximalPairs
+//            this.sortMaximalPointsInPointCirclePair();
+            System.out.println("Printing sorted maximal points");
+            this.printMaximalPointsInPointCirclePair();
             this.sortMaximalPoints();
 
 
-            // draw maximal line
-            this.drawMaximalPointLines();
-
-            System.out.println("Sorted Maximal Points: ");
-            System.out.println(maximalPointsList);
-
             // change maximal points to green
-            for(Point point : maximalPointsList) {
-                Circle circle = new Circle();
-                circle.setCenterX((double) point.getX());
-                circle.setCenterY((double) point.getY());
-                circle.setRadius(5.0f);
-                circle.setFill(Color.GREEN);
-                this.getChildren().add(circle);
-            }
+//            for(Point point : maximalPointsList) {
+//                Circle circle = new Circle();
+//                circle.setCenterX((double) point.getX());
+//                circle.setCenterY((double) point.getY());
+//                circle.setRadius(5.0f);
+//                circle.setFill(Color.GREEN);
+//                this.getChildren().add(circle);
+//            }
 
         }
 
-        private void findMaximalPoints() {
-            // This method will find the maximal points and draw the lines that connect them
-            // It will be called when a point is added or removed
-            // It will also be called when the program starts to find the initial maximal points
-            for(Point p : pointsList) {
-                this.isMaximal = true;
-                for(Point q : pointsList) {
-                    if(p.getX() == q.getX() && p.getY() == q.getY()){
+        private static class PointCirclePair{
+            public final Point point;
+            public final Circle circle;
+            public boolean isMaximalPoint = false;
+
+            // Static shared list of maximal points
+            public static ArrayList<PointCirclePair> maximalPointCirclePairs = new ArrayList<>();
+            public static ArrayList<PointCirclePair> sortedPointCirclePairs = new ArrayList<>();
+            public PointCirclePair(Point point,Circle circle){
+                this.point = point;
+                this.circle = circle;
+            }
+        }
+
+        private  void addInitialPoints(ArrayList<Point> initialPoints){
+            for(Point point : initialPoints) {
+               Circle circle = this.createCircle(point.getX(),point.getY());
+               this.pointCirclePairs.add(new PointCirclePair(point, circle));
+               this.addPointToChildren(circle);
+            }
+        }
+
+        private Circle createCircle(double x, double y){
+            Circle circle = new Circle();
+            circle.setCenterX(x);
+            circle.setCenterY(y);
+            circle.setRadius(5.0f);
+            circle.setFill(Color.BLACK);
+            return circle;
+        }
+
+        private void findMaximalPointsInPointCirclePair(){
+            // each time this method runs, clear the previous maximal points
+            for(PointCirclePair point: pointCirclePairs) {
+                point.isMaximalPoint = false;
+            }
+
+            for(PointCirclePair pPoint: pointCirclePairs) {
+                Point p = new Point(pPoint.point.getX(), pPoint.point.getY());
+                boolean localIsMax = true;
+                for(PointCirclePair qPair: pointCirclePairs){
+                    Point q = new Point(qPair.point.getX(), qPair.point.getY());
+                    if( p.getX() == q.getX() && p.getY() == q.getY() ){
                         System.out.println("p and q are equal");
                         continue;
                     }
-                    if(q.getY() <= p.getY() && q.getX() > p.getX()) {
-                        isMaximal = false;
-                        System.out.println("Point " + p + " is not maximal because of point " + q);
+                    if (q.getY() <= p.getY() && q.getX() > p.getX()){
+                        localIsMax = false;
                         break;
                     }
+
                 }
-                if(isMaximal) {
-                    maximalPointsList.add(p);
+                if(localIsMax) {
+                    pPoint.isMaximalPoint = true;
+                    PointCirclePair.maximalPointCirclePairs.add(pPoint);
+
                 }
+
             }
-
-
         }
 
         private void sortMaximalPoints() {
@@ -194,6 +247,19 @@ class the implements the Comparable interface with the following public methods:
 
             }
         }
+
+//        private void sortMaximalPointsInPointCirclePair() {
+//            for(int i = 1; i < PointCirclePair.maximalPointCirclePairs.size(); i++){
+//                Point currentValue = PointCirclePair.maximalPointCirclePairs.get(i).point;
+//                int j = i -1;
+//                while(j >= 0 && maximalPointsList.get(j).compareTo(currentValue) > 0 ){
+//                    PointCirclePair.maximalPointCirclePairs.set(j + 1, PointCirclePair.maximalPointCirclePairs.get(j));
+//                    j--;
+//                }
+//                maximalPointsList.set(j + 1, currentValue);
+//            }
+//
+//        }
 
         private void mouseClickPrimaryHandler(MouseButton e, double x, double y){
             Circle circle = new Circle();
@@ -242,6 +308,14 @@ class the implements the Comparable interface with the following public methods:
 
         private void addPointToChildren(Circle circle) {
             this.getChildren().add(circle);
+        }
+
+        public void printMaximalPointsInPointCirclePair(){
+            for(PointCirclePair point: pointCirclePairs) {
+                if(point.isMaximalPoint) {
+                    System.out.println(point.point);
+                }
+            }
         }
 
         public void printChildren() {
