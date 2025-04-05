@@ -2,6 +2,7 @@ package com.example.demo;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 
 
@@ -119,7 +120,6 @@ class the implements the Comparable interface with the following public methods:
         public PaneClass(ArrayList<Point> initialPoints) {
             pointsList = initialPoints;
 
-
             for(Point point : pointsList) {
                 Circle circle = new Circle();
                 circle.setCenterX((double) point.getX());
@@ -127,7 +127,6 @@ class the implements the Comparable interface with the following public methods:
                 circle.setRadius(5.0f);
                 circle.setFill(Color.BLACK);
                 this.getChildren().add(circle);
-
             }
             // find Maximal Points
             this.findMaximalPoints();
@@ -137,30 +136,47 @@ class the implements the Comparable interface with the following public methods:
 
             //sort maximal points in order from smallest to largest by x coordinate using insertion sort
             this.sortMaximalPoints();
-
-
+            //change color of maximal points
+            this.changeMaximalPointColor();
             // draw maximal line
             this.drawMaximalPointLines();
 
             System.out.println("Sorted Maximal Points: ");
             System.out.println(maximalPointsList);
 
-            // change maximal points to green
-            for(Point point : maximalPointsList) {
-                Circle circle = new Circle();
-                circle.setCenterX((double) point.getX());
-                circle.setCenterY((double) point.getY());
-                circle.setRadius(5.0f);
-                circle.setFill(Color.GREEN);
-                this.getChildren().add(circle);
-            }
-
         }
 
-        private void findMaximalPoints() {
+        public void changeMaximalPointColor(){
+            //reset any previous maximal colors
+            for(int i = 0; i < this.getChildren().size(); i++){
+                if(this.getChildren().get(i) instanceof Circle){
+                    ( (Circle) this.getChildren().get(i) ).setFill(Color.BLACK);
+                }
+            }
+            // change maximal points to green
+            for(Point point : maximalPointsList) {
+//                for(javafx.scene.Node Node : this.getChildren()){
+//                    if(point.getX() == Node. )
+//                }
+                for(int i = 0; i < this.getChildren().size(); i++){
+                    if (this.getChildren().get(i) instanceof Circle
+                            && ((Circle) this.getChildren().get(i)).getCenterX() == point.getX()
+                            && ((Circle) this.getChildren().get(i)).getCenterY() == point.getY()) {
+
+                        ((Circle) this.getChildren().get(i)).setFill(Color.GREEN);
+                    }
+                }
+
+            }
+        }
+
+        public void findMaximalPoints() {
             // This method will find the maximal points and draw the lines that connect them
             // It will be called when a point is added or removed
             // It will also be called when the program starts to find the initial maximal points
+
+            //reset any previous maximal points
+            maximalPointsList.clear();
             for(Point p : pointsList) {
                 this.isMaximal = true;
                 for(Point q : pointsList) {
@@ -182,7 +198,7 @@ class the implements the Comparable interface with the following public methods:
 
         }
 
-        private void sortMaximalPoints() {
+        public void sortMaximalPoints() {
             for(int i = 1; i < maximalPointsList.size(); i++){
                 Point currentValue = maximalPointsList.get(i);
                 int j = i - 1;
@@ -195,6 +211,45 @@ class the implements the Comparable interface with the following public methods:
             }
         }
 
+        public void drawMaximalPointLines(){
+            // remove all previously drawn lines
+            for(int i = 0;i < this.getChildren().size(); i++){
+                if(this.getChildren().get(i) instanceof Line){
+                    this.getChildren().remove(i);
+                }
+            }
+            for(int i = 0; i< maximalPointsList.size()-1; i++) {
+                Line line1 = new Line();
+                double line1YEnd = 0;
+                double line1XEnd = 0;
+
+                Line line2 = new Line();
+                line1.setStartX(maximalPointsList.get(i).getX());
+                line1.setStartY(maximalPointsList.get(i).getY());
+                line1XEnd = maximalPointsList.get(i).getX();
+                line1.setEndX(maximalPointsList.get(i).getX());
+                line1YEnd = maximalPointsList.get(i+1).getY();
+                line1.setEndY(line1YEnd);
+                line1.setStroke(Color.RED);
+                line2.setStartX(line1YEnd);
+                line2.setEndX(maximalPointsList.get(i+1).getX());
+                line2.setEndY(maximalPointsList.get(i).getY());
+                this.getChildren().add(line1);
+                this.getChildren().add(line2);
+            }
+        }
+
+        public boolean getPointsChanged(){
+            return this.pointsChanged;
+        }
+
+        public ArrayList<Point> getMaximalPointsList() {
+            return maximalPointsList;
+        }
+        public ArrayList<Point> getPointsList() {
+            return pointsList;
+        }
+
         private void mouseClickPrimaryHandler(MouseButton e, double x, double y){
             Circle circle = new Circle();
             circle.setCenterX(x);
@@ -203,20 +258,11 @@ class the implements the Comparable interface with the following public methods:
             circle.setRadius(5.0f);
             // Add the point to the children list
             this.addPointToChildren(circle);
+            // add this to pointsList
+            Point currentPoint = new Point(x,y);
+            this.pointsList.add(currentPoint);
             //set the pointsCHanged flag to true
             this.pointsChanged = true;
-        }
-
-        private void drawMaximalPointLines(){
-            for(int i = 0; i< maximalPointsList.size()-1; i++) {
-                Line line = new Line();
-                line.setStartX(maximalPointsList.get(i).getX());
-                line.setStartY(maximalPointsList.get(i).getY());
-                line.setEndX(maximalPointsList.get(i).getX());
-                line.setEndY(maximalPointsList.get(i+1).getY());
-                line.setStroke(Color.RED);
-                this.getChildren().add(line);
-            }
         }
 
         private void mouseClickSecondaryHandler(MouseButton e, double x, double y){
@@ -228,6 +274,8 @@ class the implements the Comparable interface with the following public methods:
                         if(circle.contains(x, y)) {
                             System.out.println("Point " + this.getChildren().get(i) + " was removed");
                             this.getChildren().remove(i);
+                            //now remove from pointsList
+                            this.pointsList.remove(i);
                             // set the pointsChanged flag to true
                             this.pointsChanged = true;
                             break;
@@ -255,16 +303,17 @@ class the implements the Comparable interface with the following public methods:
     public void start(Stage stage) throws IOException {
 
         stage.setTitle("Project 2");
-        ArrayList<Point> paneTotalPointList = new ArrayList<>();
+        ArrayList<Point> initialPointsFile = new ArrayList<>();
         // Read the file and get the points
-        paneTotalPointList = ReadFile();
+        initialPointsFile = ReadFile();
 
         // Create the pane and add the points to it
-        PaneClass customPaneClass = new PaneClass(paneTotalPointList);
+        PaneClass customPaneClass = new PaneClass(initialPointsFile);
 
         // Mouse events for adding circles on left click and removing circles on right click
 
         customPaneClass.setOnMouseClicked(e -> {
+            boolean pointsChanged = false;
 
             //ArrayList<Point> maximalLinePoints = null;
 
@@ -272,15 +321,21 @@ class the implements the Comparable interface with the following public methods:
             if (e.getButton() == MouseButton.PRIMARY) {
                 // Display new point on screen
                customPaneClass.mouseClickPrimaryHandler(e.getButton() ,e.getX(), e.getY());
+               pointsChanged = true;
 
             }
             else if (e.getButton() == MouseButton.SECONDARY) {
                 customPaneClass.mouseClickSecondaryHandler(e.getButton() ,e.getX(), e.getY());
+                pointsChanged = true;
+            }
+            if (pointsChanged) {
+                customPaneClass.findMaximalPoints();
+                customPaneClass.sortMaximalPoints();
+                customPaneClass.changeMaximalPointColor();
+                customPaneClass.drawMaximalPointLines();
             }
 
-            // Call method to recalculate maximal line if a point was added or removed, use a flag
-            //          maximalLinePoints = calculateListOfPointsOnMaximalLine( pointsList );
-            //          drawMaximalLine( maximalLinePoints );
+
         });
 
 
@@ -288,6 +343,8 @@ class the implements the Comparable interface with the following public methods:
         Scene scene = new Scene(customPaneClass, 1000, 700);
         stage.setScene(scene);
         stage.show();
+
+
     }
 
     public static void main(String[] args) {
